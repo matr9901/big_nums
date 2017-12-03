@@ -1,6 +1,13 @@
+#include <math.h> 
 #include "bn.h"
 
-struct bn_s;
+
+struct bn_s {
+	int *body;
+	int bodysize;
+	int sign;
+};
+
 typedef struct bn_s bn;
 
 enum bn_codes { BN_OK, 
@@ -34,12 +41,27 @@ int bn_init_int(bn *t, int init_int) {
 
 // Уничтожить BN (освободить память)
 int bn_delete(bn *t) {
-
+	free (t->body);
+	free (t);
 }
 
 // Операции, аналогичные +=, -=, *=, /=, %=
 int bn_add_to(bn *t, bn const *right) {
-
+	int i;
+	int size = t->bodysize;
+	
+	if (right->bodysize > size) {
+		size = right->bodysize;
+	}
+	int mod = 0;
+	for (i = 0; i < size; i++) {
+		long int a = (long int) t->body[i];
+		long int b = (long int) right->body[i];
+		if ((a+b+k)/((int)pow (2, 8 * sizeof(int) - 1)) >= 1) {
+			mod = 1;
+		}
+		t->body[i] = (a + b + k) % ((int)pow (2, 8 * sizeof(int) - 1));
+	}
 }
 
 int bn_sub_to(bn *t, bn const *right) {
