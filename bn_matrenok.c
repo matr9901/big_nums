@@ -10,21 +10,42 @@ struct bn_s {
 
 typedef struct bn_s bn;
 
-enum bn_codes { BN_OK, 
-	BN_NULL_OBJECT, 
-	BN_NO_MEMORY, 
-	BN_DIVIDE_BY_ZERO };
-
 bn *bn_new() { // Создать новое BN
-
+    bn * r = malloc(sizeof bn);
+    if (r == NULL){
+        return NULL;
+    }
+    r->bodysize = 1;
+    r->sign = 0;
+    r->body = malloc(sizeof(int) * r->bodysize);
+    if (r->body == NULL) {
+        free (r);
+        return NULL;
+    }
+    r->body[0] = 0;
+    return r;
 } 
 
 bn *bn_init(bn const *orig) { // Создать копию существующего BN
-
+    bn * r = malloc(sizeof bn);
+    if (r == NULL){
+        return NULL;
+    }
+    r->bodysize = orig->bodysize;
+    r->sign = orig->sign;
+    r->body = malloc(sizeof(orig->body));
+    if (r->body == NULL) {
+        free (r);
+        return NULL;
+    }
+    for (i = 0; i<(r->bodysize); i++){
+        r->body[i]=orig->body[i];
+    }
 }
 
 // Инициализировать значение BN десятичным представлением строки
 int bn_init_string(bn *t, const char *init_string) {
+
 
 }
 
@@ -36,7 +57,10 @@ int bn_init_string_radix(bn *t, const char *init_string, int radix) {
 
 // Инициализировать значение BN заданным целым числом
 int bn_init_int(bn *t, int init_int) {
-
+    if (init_int < 0){
+        t->sign = 1;
+    }
+    t->body[0] = init_int;
 }
 
 // Уничтожить BN (освободить память)
@@ -131,4 +155,4 @@ int bn_abs(bn *t) { // Взять модуль
 }
 int bn_sign(bn const *t) { //-1 если t<0; 0 если t = 0, 1 если t>0
 
-} 
+}
