@@ -1,4 +1,5 @@
-#include <math.h> 
+#include <math.h>
+#include <stdlib.h>
 #include "bn.h"
 
 
@@ -41,6 +42,7 @@ bn *bn_init(bn const *orig) { // Создать копию существующ�
     for (i = 0; i<(r->bodysize); i++){
         r->body[i]=orig->body[i];
     }
+    return r;
 }
 
 // Инициализировать значение BN десятичным представлением строки
@@ -61,6 +63,7 @@ int bn_init_int(bn *t, int init_int) {
         t->sign = 1;
     }
     t->body[0] = init_int;
+    return 0;
 }
 
 // Уничтожить BN (освободить память)
@@ -106,7 +109,7 @@ int bn_mod_to(bn *t, bn const *right) {
 
 // Возвести число в степень degree
 int bn_pow_to(bn *t, int degree) {
-
+    bn_add_to(t, degree);
 }
 
 // Извлечь корень степени reciprocal из BN (бонусная функция)
