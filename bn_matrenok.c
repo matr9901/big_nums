@@ -4,15 +4,15 @@
 
 
 struct bn_s {
-	int *body;
-	int bodysize;
-	int sign;
+    int *body;
+    int bodysize;
+    int sign;
 };
 
 typedef struct bn_s bn;
 
 bn *bn_new() { // Создать новое BN
-    bn * r = malloc(sizeof bn);
+    bn * r = malloc(sizeof (bn));
     if (r == NULL){
         return NULL;
     }
@@ -28,7 +28,7 @@ bn *bn_new() { // Создать новое BN
 } 
 
 bn *bn_init(bn const *orig) { // Создать копию существующего BN
-    bn * r = malloc(sizeof bn);
+    bn * r = malloc(sizeof (bn));
     if (r == NULL){
         return NULL;
     }
@@ -39,6 +39,7 @@ bn *bn_init(bn const *orig) { // Создать копию существующ�
         free (r);
         return NULL;
     }
+    int i;
     for (i = 0; i<(r->bodysize); i++){
         r->body[i]=orig->body[i];
     }
@@ -59,36 +60,59 @@ int bn_init_string_radix(bn *t, const char *init_string, int radix) {
 
 // Инициализировать значение BN заданным целым числом
 int bn_init_int(bn *t, int init_int) {
+	bn* x = malloc (sizeof (bn));
     if (init_int < 0){
-        t->sign = 1;
+        x->sign = 1;
+    } else {
+    	x->sign = 0;
     }
-    t->body[0] = init_int;
+    x->body = malloc (sizeof (int));
+    x->body[0] = abs(init_int);
+    t = x;
     return 0;
 }
 
 // Уничтожить BN (освободить память)
 int bn_delete(bn *t) {
-	free (t->body);
-	free (t);
+    if (t != NULL) {
+    	if (t->body != NULL) {
+    	    free (t->body);
+    	}
+    free (t);
+    }
 }
 
 // Операции, аналогичные +=, -=, *=, /=, %=
 int bn_add_to(bn *t, bn const *right) {
-	int i;
-	int size = t->bodysize;
-	
-	if (right->bodysize > size) {
-		size = right->bodysize;
-	}
-	int mod = 0;
-	for (i = 0; i < size; i++) {
-		long int a = (long int) t->body[i];
-		long int b = (long int) right->body[i];
-		if ((a+b+k)/((int)pow (2, 8 * sizeof(int) - 1)) >= 1) {
-			mod = 1;
-		}
-		t->body[i] = (a + b + k) % ((int)pow (2, 8 * sizeof(int) - 1));
-	}
+    int i;
+    int size = t->bodysize;
+
+    if (right->bodysize > size) {
+        size = right->bodysize;
+    }
+    int k = 0;
+    for (i = 0; i < size; i++) {
+    	long int a;
+    	long int b;
+    	if (i > t->bodysize) {
+    	    a = (long int) t->body[i];
+    	} else {
+    		a = 0;
+    	}
+    	if (i > right->bodysize) {
+    	    b = (long int) right->body[i];	
+    	} else {
+            b = 0;
+    	}
+        
+        if ((a+b+k)/((int)pow (2, 8 * sizeof(int) - 1)) >= 1) {
+            k = 1;
+        } else {
+        	k = 0;
+        }
+
+        t->body[i] = (a + b + k) % ((int)pow (2, 8 * sizeof(int) - 1));
+    }
 }
 
 int bn_sub_to(bn *t, bn const *right) {
@@ -109,12 +133,17 @@ int bn_mod_to(bn *t, bn const *right) {
 
 // Возвести число в степень degree
 int bn_pow_to(bn *t, int degree) {
-    bn_add_to(t, degree);
+    bn* nbn = bn_new();
+    int i;
+    for (i = 0; i < degree; i++) {
+        bn_add_to(nbn, t);
+    }
+
 }
 
 // Извлечь корень степени reciprocal из BN (бонусная функция)
 int bn_root_to(bn *t, int reciprocal) {
-
+    
 }
 
 // Аналоги операций x = l+r (l-r, l*r, l/r, l%r)
