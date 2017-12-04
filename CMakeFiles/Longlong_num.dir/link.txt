@@ -1,0 +1,1 @@
+/usr/bin/cc    CMakeFiles/Longlong_num.dir/main.c.o CMakeFiles/Longlong_num.dir/bn_matrenok.c.o  -o Longlong_num 

@@ -74,8 +74,12 @@ int bn_init_int(bn *t, int init_int) {
 
 // Уничтожить BN (освободить память)
 int bn_delete(bn *t) {
-    free (t->body);
+    if (t != NULL) {
+    	if (t->body != NULL) {
+    	    free (t->body);
+    	}
     free (t);
+    }
 }
 
 // Операции, аналогичные +=, -=, *=, /=, %=
