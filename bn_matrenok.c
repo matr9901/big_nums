@@ -72,35 +72,7 @@ int bn_delete(bn *t) {
 
 // Операции, аналогичные +=, -=, *=, /=, %=
 int bn_add_to(bn *t, bn const *right) {
-    int i;
-    int size = t->bodysize;
-
-    if (right->bodysize > size) {
-        size = right->bodysize;
-    }
-    int k = 0;
-    for (i = 0; i < size; i++) {
-        long int a;
-        long int b;
-        if (i > t->bodysize) {
-            a = (long int) t->body[i];
-        } else {
-            a = 0;
-        }
-        if (i > right->bodysize) {
-            b = (long int) right->body[i];    
-        } else {
-            b = 0;
-        }
-        
-        if ((a+b+k)/((int)pow (2, 8 * sizeof(int) - 1)) >= 1) {
-            k = 1;
-        } else {
-            k = 0;
-        }
-
-        t->body[i] = (a + b + k) % ((int)pow (2, 8 * sizeof(int) - 1));
-    }
+    
 }
 
 int bn_sub_to(bn *t, bn const *right) {
@@ -121,12 +93,12 @@ int bn_mod_to(bn *t, bn const *right) {
 
 // Возвести число в степень degree
 int bn_pow_to(bn *t, int degree) {
-    bn* nbn = bn_new();
+    bn* nbn = bn_init(t);
     int i;
-    for (i = 0; i < degree; i++) {
-        bn_add_to(nbn, t);
+    for (i = 0; i < degree - 1; i++) {
+        bn_mul_to(t, nbn);
     }
-
+    bn_delete(nbn);
 }
 
 // Извлечь корень степени reciprocal из BN (бонусная функция)
@@ -136,7 +108,7 @@ int bn_root_to(bn *t, int reciprocal) {
 
 // Аналоги операций x = l+r (l-r, l*r, l/r, l%r)
 bn* bn_add(bn const *left, bn const *right) {
-
+    
 }
 
 bn* bn_sub(bn const *left, bn const *right) {
