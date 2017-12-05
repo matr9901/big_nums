@@ -1,3 +1,0 @@
-/home/andrewche/projects/big_nums/CMakeFiles/edit_cache.dir
-/home/andrewche/projects/big_nums/CMakeFiles/rebuild_cache.dir
-/home/andrewche/projects/big_nums/CMakeFiles/Longlong_num.dir

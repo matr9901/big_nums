@@ -2,3 +2,8 @@
 *.exe
 cmake-build-debug
 .idea
+Longlong_num
+Makefile
+_config.yml
+CMakeCache.txt
+CMakeFiles
