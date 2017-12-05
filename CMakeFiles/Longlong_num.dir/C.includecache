@@ -13,8 +13,6 @@ math.h
 -
 stdlib.h
 -
-bn.h
-/home/andrewche/projects/big_nums/bn.h
 
 /home/andrewche/projects/big_nums/main.c
 stdio.h

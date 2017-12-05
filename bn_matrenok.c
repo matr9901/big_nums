@@ -1,6 +1,5 @@
 #include <math.h>
 #include <stdlib.h>
-#include "bn.h"
 
 
 struct bn_s {
@@ -12,7 +11,7 @@ struct bn_s {
 typedef struct bn_s bn;
 
 bn *bn_new() { // Создать новое BN
-    bn * r = malloc(sizeof (bn));
+    bn* r = malloc(sizeof (bn));
     if (r == NULL){
         return NULL;
     }
@@ -28,27 +27,19 @@ bn *bn_new() { // Создать новое BN
 } 
 
 bn *bn_init(bn const *orig) { // Создать копию существующего BN
-    bn * r = malloc(sizeof (bn));
-    if (r == NULL){
-        return NULL;
-    }
-    r->bodysize = orig->bodysize;
+    bn * r = bn_new();
     r->sign = orig->sign;
-    r->body = malloc(sizeof(orig->body));
-    if (r->body == NULL) {
-        free (r);
-        return NULL;
-    }
+    r->bodysize = orig->bodysize;
+    r->body = realloc(r->body, sizeof(int) * r->bodysize);
     int i;
-    for (i = 0; i<(r->bodysize); i++){
-        r->body[i]=orig->body[i];
+    for (i = 0; i < r->bodysize; i++) {
+        r->body[i] = orig->body[i];
     }
     return r;
 }
 
 // Инициализировать значение BN десятичным представлением строки
 int bn_init_string(bn *t, const char *init_string) {
-
 
 }
 
@@ -60,24 +51,21 @@ int bn_init_string_radix(bn *t, const char *init_string, int radix) {
 
 // Инициализировать значение BN заданным целым числом
 int bn_init_int(bn *t, int init_int) {
-	bn* x = malloc (sizeof (bn));
     if (init_int < 0){
-        x->sign = 1;
+        t->sign = 1;
     } else {
-    	x->sign = 0;
+        t->sign = 0;
     }
-    x->body = malloc (sizeof (int));
-    x->body[0] = abs(init_int);
-    t = x;
+    t->body[0] = abs(init_int);
     return 0;
 }
 
 // Уничтожить BN (освободить память)
 int bn_delete(bn *t) {
     if (t != NULL) {
-    	if (t->body != NULL) {
-    	    free (t->body);
-    	}
+        if (t->body != NULL) {
+            free (t->body);
+        }
     free (t);
     }
 }
@@ -92,23 +80,23 @@ int bn_add_to(bn *t, bn const *right) {
     }
     int k = 0;
     for (i = 0; i < size; i++) {
-    	long int a;
-    	long int b;
-    	if (i > t->bodysize) {
-    	    a = (long int) t->body[i];
-    	} else {
-    		a = 0;
-    	}
-    	if (i > right->bodysize) {
-    	    b = (long int) right->body[i];	
-    	} else {
+        long int a;
+        long int b;
+        if (i > t->bodysize) {
+            a = (long int) t->body[i];
+        } else {
+            a = 0;
+        }
+        if (i > right->bodysize) {
+            b = (long int) right->body[i];    
+        } else {
             b = 0;
-    	}
+        }
         
         if ((a+b+k)/((int)pow (2, 8 * sizeof(int) - 1)) >= 1) {
             k = 1;
         } else {
-        	k = 0;
+            k = 0;
         }
 
         t->body[i] = (a + b + k) % ((int)pow (2, 8 * sizeof(int) - 1));

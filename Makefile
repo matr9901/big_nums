@@ -115,7 +115,7 @@ depend:
 
 # Build rule for target.
 Longlong_num: cmake_check_build_system
-	$(MAKE) -f -g CMakeFiles/Makefile2 Longlong_num
+	$(MAKE) -f CMakeFiles/Makefile2 Longlong_num
 .PHONY : Longlong_num
 
 # fast build rule for target.
