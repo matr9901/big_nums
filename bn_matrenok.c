@@ -126,6 +126,7 @@ int bn_pow_to(bn *t, int degree) {
     for (i = 0; i < degree; i++) {
         bn_add_to(nbn, t);
     }
+
 }
 
 // Извлечь корень степени reciprocal из BN (бонусная функция)
