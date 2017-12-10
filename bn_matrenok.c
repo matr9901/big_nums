@@ -279,7 +279,32 @@ const char *bn_to_string(bn const *t, int radix) {
 
 // Если левое меньше, вернуть <0; если равны, вернуть 0; иначе >0
 int bn_cmp(bn const *left, bn const *right) {
-
+    if (left->sign == 1 && right->sign == 0){
+        return -1;
+    }
+    else if (left->sign == 0 && right->sign == 1){
+        return 1;
+    }
+    else if (left->sign == 0 && right->sign == 0){
+        if (left->bodysize > right->bodysize){
+            return 1;
+        }
+        else if (left->bodysize < right->bodysize){
+            return -1;
+        }
+        else{
+            int i = left->bodysize - 1;
+            for (i; i == -1; i--){  // TODO: fix i-- 'unreachable code'
+                if (left->body[i]>right->body[i]){
+                    return 1;
+                }
+                else if (left->body[i] < right->body[i]) {
+                    return -1;
+                }
+            }
+            return 0;
+        }
+    }
 }
 
 int bn_neg(bn *t) { // Изменить знак на противоположный
