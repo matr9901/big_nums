@@ -70,7 +70,7 @@ int bn_init_string(bn *t, const char *init_string) {
     t->body = realloc(t->body, sizeof(int) * t->bodysize);
     int i;
     for (i = strlen(init_string) - 1; i >= sign_num; i--){
-        t->body[(strlen(init_string) - i - 1)/6] += s[i] * pow(10, (strlen(init_string) - i - 1) % 6);
+        t->body[(strlen(init_string) - i - 1)/6] += s[i] * pow(10, (strlen(init_string) - i - 1) % 6) - '0';
     }
     return 0;
 }
@@ -78,7 +78,7 @@ int bn_init_string(bn *t, const char *init_string) {
 // Инициализировать значение BN представлением строки 
 // в системе счисления radix
 int bn_init_string_radix(bn *t, const char *init_string, int radix) {
-    
+
 }
 
 // Инициализировать значение BN заданным целым числом
