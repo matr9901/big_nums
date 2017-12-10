@@ -52,11 +52,13 @@ int bn_init_string(bn *t, const char *init_string) {
     int sign_num;
     if (init_string[0] == '-') {
         sign_num = 1;
-        t->sign = -1;
-    } else if ((init_string[0] < 58) && (init_string[0] > 48)) {
-        sign_num = 0;
         t->sign = 1;
-    } else if ((init_string[0] == '0') && (strlen(init_string) == 1)) {
+    }
+    else if (init_string[0] < 58 && init_string[0] > 48) {
+        sign_num = 0;
+        t->sign = 0;
+    }
+    else if (init_string[0] == '0' && strlen(init_string) == 1) {
         sign_num = 0;
         t->sign = 0;
     } else{
@@ -80,11 +82,11 @@ int bn_init_string_radix(bn *t, const char *init_string, int radix) {
     int sign_num;
     if (init_string[0] == '-') {
         sign_num = 1;
-        t->sign = -1;
+        t->sign = 1;
     }
     else if ((init_string[0] < 58) && (init_string[0] > 48)) {
         sign_num = 0;
-        t->sign = 1;
+        t->sign = 0;
     }
     else if ((init_string[0] == '0') && (strlen(init_string) == 1)) {
         sign_num = 0;
