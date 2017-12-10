@@ -1,6 +1,8 @@
 #include <math.h>
 #include <stdlib.h>
 
+#define max(x, y) (((x) < (y)) ? (x) : (y))
+#define N 1000000
 
 struct bn_s {
     int *body;
@@ -10,14 +12,19 @@ struct bn_s {
 
 typedef struct bn_s bn;
 
+
+
+//Длинное число представляет из себя массив из шестизначных чисел
+//То есть максимум каждой "цифры" 999999.
+
 bn *bn_new() { // Создать новое BN
     bn* r = malloc(sizeof (bn));
-    if (r == NULL){
+    if (r == NULL) {
         return NULL;
     }
     r->bodysize = 1;
     r->sign = 0;
-    r->body = malloc(sizeof(int) * r->bodysize);
+    r->body = malloc(sizeof (int) * r->bodysize);
     if (r->body == NULL) {
         free (r);
         return NULL;
@@ -56,7 +63,15 @@ int bn_init_int(bn *t, int init_int) {
     } else {
         t->sign = 0;
     }
-    t->body[0] = abs(init_int);
+
+    int x = abs(init_int);
+    while (x > 0) {
+        t->body[t->bodysize - 1] = x % N;
+        t->bodysize++;
+        t->body = realloc(t->body, sizeof(int) * t->bodysize);
+        x /= N;
+    }
+
     return 0;
 }
 
@@ -108,7 +123,28 @@ int bn_root_to(bn *t, int reciprocal) {
 
 // Аналоги операций x = l+r (l-r, l*r, l/r, l%r)
 bn* bn_add(bn const *left, bn const *right) {
+
+    bn* res = bn_new();
     
+    res->sign = 0;
+    res->bodysize = max (left->bodysize, right->bodysize);
+    
+    res->body = realloc(res->body, sizeof(int) * (res->bodysize + 1));
+    int i;
+    int r = 0;
+    for (i = 0; i < res->bodysize | r; i++) {
+        res->body[i] = left->body[i] + right->body[i] + r;
+        if (res->body[i] >= N) {
+            res->body[i] -= N;
+            r = 1;
+        } else {
+            r = 0;
+        }
+    }
+    if (res->body[res->bodysize]) {
+        res->bodysize++;
+    }
+    return res;
 }
 
 bn* bn_sub(bn const *left, bn const *right) {
@@ -130,7 +166,7 @@ bn* bn_mod(bn const *left, bn const *right) {
 // Выдать представление BN в системе счисления radix в виде строки
 //Строку после использования потребуется удалить.
 const char *bn_to_string(bn const *t, int radix) {
-
+    
 }
 
 // Если левое меньше, вернуть <0; если равны, вернуть 0; иначе >0
@@ -139,12 +175,20 @@ int bn_cmp(bn const *left, bn const *right) {
 }
 
 int bn_neg(bn *t) { // Изменить знак на противоположный
-
+    if (t->sign) {
+        t->sign = 0;
+    } else {
+        t->sign = 1;
+    }
 }
 
 int bn_abs(bn *t) { // Взять модуль
-
+    t->sign = 0;
 }
 int bn_sign(bn const *t) { //-1 если t<0; 0 если t = 0, 1 если t>0
-
+    if ((t->bodysize == 1) && (t->body[0] == 0)) {
+        return 0;
+    } else {
+        return ((t->sign * 2) - 1);
+    }
 }

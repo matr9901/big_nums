@@ -7,3 +7,4 @@ Makefile
 _config.yml
 CMakeCache.txt
 CMakeFiles
+*.cmake
