@@ -1,5 +1,6 @@
 #include <math.h>
 #include <stdlib.h>
+#include <math.h>
 
 #define max(x, y) (((x) < (y)) ? (x) : (y))
 #define N 1000000
@@ -47,7 +48,15 @@ bn *bn_init(bn const *orig) { // Создать копию существующ�
 
 // Инициализировать значение BN десятичным представлением строки
 int bn_init_string(bn *t, const char *init_string) {
-
+    int sign_num = 0;
+    int number_digits = strlen(init_string) - sign_num;
+    t->bodysize = number_digits % 6 == 0 ? number_digits / 6 : number_digits / 6 + 1;
+    t->body = realloc(t->body, sizeof(int) * t->bodysize);
+    int i;
+    for (i = strlen(init_string) - 1; i >= sign_num; i--){
+        t->body[(strlen(init_string) - i - 1)/6] += s[i] * pow(10, (strlen(init_string) - i - 1) % 6);
+    }
+    return 0;
 }
 
 // Инициализировать значение BN представлением строки 
@@ -113,7 +122,7 @@ int bn_pow_to(bn *t, int degree) {
     for (i = 0; i < degree - 1; i++) {
         bn_mul_to(t, nbn);
     }
-    bn_delete(nbn);
+    bn_delete(nbn);s
 }
 
 // Извлечь корень степени reciprocal из BN (бонусная функция)
@@ -141,11 +150,17 @@ bn* bn_add(bn const *left, bn const *right) {
             r = 0;
         }
     }
+<<<<<<< HEAD
 
     if (res->body[res->bodysize]) {
         res->bodysize++;
     }
     
+=======
+    if (res->body[res->bodysize]) {
+        res->bodysize++;
+    }
+>>>>>>> 34ccb8505fef74b1df3e5edbdb1381baa0e510a2
     return res;
 }
 
@@ -168,7 +183,7 @@ bn* bn_mod(bn const *left, bn const *right) {
 // Выдать представление BN в системе счисления radix в виде строки
 //Строку после использования потребуется удалить.
 const char *bn_to_string(bn const *t, int radix) {
-
+    
 }
 
 // Если левое меньше, вернуть <0; если равны, вернуть 0; иначе >0
