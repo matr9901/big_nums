@@ -50,28 +50,25 @@ bn *bn_init(bn const *orig) { // Создать копию существующ�
 // Инициализировать значение BN десятичным представлением строки
 int bn_init_string(bn *t, const char *init_string) {
     int sign_num;
-    if init_string[0] = '-'{
+    if (init_string[0] == '-') {
         sign_num = 1;
         t->sign = -1;
-    }
-    else if (init_string[0] < 58 && init_string[0] > 48){
+    } else if ((init_string[0] < 58) && (init_string[0] > 48)) {
         sign_num = 0;
         t->sign = 1;
-    }
-    else if (init_string[0] == '0' && strlen(init_string) == 1){
+    } else if ((init_string[0] == '0') && (strlen(init_string) == 1)) {
         sign_num = 0;
         t->sign = 0;
-    }
-    else{
+    } else{
         printf("incorrect input");
         return 1;
     }
+
     int number_digits = strlen(init_string) - sign_num;
     t->bodysize = number_digits % 6 == 0 ? number_digits / 6 : number_digits / 6 + 1;
     t->body = realloc(t->body, sizeof(int) * t->bodysize);
     int i;
-    for (i = strlen(init_string) - 1; i >= sign_num; i--){
-
+    for (i = strlen(init_string) - 1; i >= sign_num; i--) {
         t->body[(strlen(init_string) - i - 1)/6] += (init_string[i] - '0') * pow(10, (strlen(init_string) - i - 1) % 6);
     }
     return 0;
@@ -81,31 +78,30 @@ int bn_init_string(bn *t, const char *init_string) {
 // в системе счисления radix
 int bn_init_string_radix(bn *t, const char *init_string, int radix) {
     int sign_num;
-    if init_string[0] = '-'{
+    if (init_string[0] == '-') {
         sign_num = 1;
         t->sign = -1;
     }
-    else if (init_string[0] < 58 && init_string[0] > 48){
+    else if ((init_string[0] < 58) && (init_string[0] > 48)) {
         sign_num = 0;
         t->sign = 1;
     }
-    else if (init_string[0] == '0' && strlen(init_string) == 1){
+    else if ((init_string[0] == '0') && (strlen(init_string) == 1)) {
         sign_num = 0;
         t->sign = 0;
-    }
-    else{
+    } else {
         printf("incorrect input");
         return 1;
     }
+
     int number_digits = strlen(init_string) - sign_num;
     t->bodysize = number_digits % 6 == 0 ? number_digits / 6 : number_digits / 6 + 1;
     t->body = realloc(t->body, sizeof(int) * t->bodysize);
     int i;
-    for (i = strlen(init_string) - 1; i >= sign_num; i--){
-        if (init_string[i] < 58 && init_string[i] > 48){
+    for (i = strlen(init_string) - 1; i >= sign_num; i--) {
+        if (init_string[i] < 58 && init_string[i] > 48) {
             t->body[(strlen(init_string) - i - 1)/6] += (init_string[i]  - '0')* pow(radix, (strlen(init_string) - i - 1) % 6);
-        }
-        else if (init_string[i] < 'Z' && init_string[i] > 'A'){
+        } else if (init_string[i] < 'Z' && init_string[i] > 'A'){
             t->body[(strlen(init_string) - i - 1)/6] += (init_string[i] - 'A' + 10) * pow(radix, (strlen(init_string) - i - 1) % 6);
         }
     }
@@ -199,12 +195,32 @@ bn* bn_abs_add(bn const *left, bn const *right) {
     return res;
 }
 
-
 // Аналоги операций x = l+r (l-r, l*r, l/r, l%r)
 bn* bn_add(bn const *left, bn const *right) {
     if ((left->sign == 0) && (right->sign == 0)) {
         return bn_abs_add (left, right);
     }
+}
+
+// вычитание по модулю, left>right
+bn* bn_abs_sub(bn const *left, bn const *right) {
+    bn* res = bn_new();
+    int i = 0;
+    res->bodysize = max (left->bodysize, right->bodysize);
+    res->body = realloc(res->body, sizeof(int) * (res->bodysize));
+
+    for (i; i<left->bodysize; i++) {
+        res->body[i] = left->body[i] - right->body[i];
+        if (res->body[i] <0) {
+            res->body[i+1]--;
+            res->body = res->body + N;
+        }
+    }
+    int a = res->bodysize - 1;
+    while ((res->body[a] == 0) && (a != 0)) {
+        res->bodysize--;
+    }
+    return res;
 }
 
 bn* bn_sub(bn const *left, bn const *right) {
