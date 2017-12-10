@@ -70,7 +70,7 @@ int bn_init_string(bn *t, const char *init_string) {
     t->body = realloc(t->body, sizeof(int) * t->bodysize);
     int i;
     for (i = strlen(init_string) - 1; i >= sign_num; i--){
-        t->body[(strlen(init_string) - i - 1)/6] += s[i] * pow(10, (strlen(init_string) - i - 1) % 6) - '0';
+        t->body[(strlen(init_string) - i - 1)/6] += (init_string[i] - '0') * pow(10, (strlen(init_string) - i - 1) % 6);
     }
     return 0;
 }
@@ -78,7 +78,36 @@ int bn_init_string(bn *t, const char *init_string) {
 // Инициализировать значение BN представлением строки 
 // в системе счисления radix
 int bn_init_string_radix(bn *t, const char *init_string, int radix) {
-
+    int sign_num;
+    if init_string[0] = '-'{
+        sign_num = 1;
+        t->sign = -1;
+    }
+    else if (init_string[0] < 58 && init_string[0] > 48){
+        sign_num = 0;
+        t->sign = 1;
+    }
+    else if (init_string[0] == '0' && strlen(init_string) == 1){
+        sign_num = 0;
+        t->sign = 0;
+    }
+    else{
+        printf("incorrect input");
+        return 1;
+    }
+    int number_digits = strlen(init_string) - sign_num;
+    t->bodysize = number_digits % 6 == 0 ? number_digits / 6 : number_digits / 6 + 1;
+    t->body = realloc(t->body, sizeof(int) * t->bodysize);
+    int i;
+    for (i = strlen(init_string) - 1; i >= sign_num; i--){
+        if (init_string[i] < 58 && init_string[i] > 48){
+            t->body[(strlen(init_string) - i - 1)/6] += (init_string[i]  - '0')* pow(radix, (strlen(init_string) - i - 1) % 6);
+        }
+        else if (init_string[i] < 'Z' && init_string[i] > 'A'){
+            t->body[(strlen(init_string) - i - 1)/6] += (init_string[i] - 'A' + 10) * pow(radix, (strlen(init_string) - i - 1) % 6);
+        }
+    }
+    return 0;
 }
 
 // Инициализировать значение BN заданным целым числом
