@@ -1,9 +1,10 @@
 #include <math.h>
 #include <stdlib.h>
-#include <math.h>
+#include <string.h>
+#include <stdio.h>
 
 #define max(x, y) (((x) < (y)) ? (x) : (y))
-#define N 1000000
+#define N 10000
 
 struct bn_s {
     int *body;
@@ -16,7 +17,7 @@ typedef struct bn_s bn;
 
 
 //Длинное число представляет из себя массив из шестизначных чисел
-//То есть максимум каждой "цифры" 999999.
+//То есть максимум каждой "цифры" 9999.
 
 bn *bn_new() { // Создать новое BN
     bn* r = malloc(sizeof (bn));
@@ -54,7 +55,7 @@ int bn_init_string(bn *t, const char *init_string) {
     t->body = realloc(t->body, sizeof(int) * t->bodysize);
     int i;
     for (i = strlen(init_string) - 1; i >= sign_num; i--){
-        t->body[(strlen(init_string) - i - 1)/6] += s[i] * pow(10, (strlen(init_string) - i - 1) % 6);
+        t->body[(strlen(init_string) - i - 1)/6] += init_string[i] * pow(10, (strlen(init_string) - i - 1) % 6);
     }
     return 0;
 }
@@ -122,7 +123,7 @@ int bn_pow_to(bn *t, int degree) {
     for (i = 0; i < degree - 1; i++) {
         bn_mul_to(t, nbn);
     }
-    bn_delete(nbn);s
+    bn_delete(nbn);
 }
 
 // Извлечь корень степени reciprocal из BN (бонусная функция)
@@ -130,18 +131,16 @@ int bn_root_to(bn *t, int reciprocal) {
     
 }
 
-// Аналоги операций x = l+r (l-r, l*r, l/r, l%r)
-bn* bn_add(bn const *left, bn const *right) {
-
+bn* bn_abs_add(bn const *left, bn const *right) {
     bn* res = bn_new();
     
     res->sign = 0;
     res->bodysize = max (left->bodysize, right->bodysize);
     
-    res->body = realloc(res->body, sizeof(int) * (res->bodysize + 1));
+    res->body = realloc(res->body, sizeof(int) * (res->bodysize));
     int i;
     int r = 0;
-    for (i = 0; i < res->bodysize | r; i++) {
+    for (i = 0; i < res->bodysize; i++) {
         res->body[i] = left->body[i] + right->body[i] + r;
         if (res->body[i] >= N) {
             res->body[i] -= N;
@@ -150,18 +149,16 @@ bn* bn_add(bn const *left, bn const *right) {
             r = 0;
         }
     }
-<<<<<<< HEAD
 
-    if (res->body[res->bodysize]) {
-        res->bodysize++;
-    }
-    
-=======
-    if (res->body[res->bodysize]) {
-        res->bodysize++;
-    }
->>>>>>> 34ccb8505fef74b1df3e5edbdb1381baa0e510a2
     return res;
+}
+
+
+// Аналоги операций x = l+r (l-r, l*r, l/r, l%r)
+bn* bn_add(bn const *left, bn const *right) {
+    if ((left->sign == 0) && (right->sign == 0)) {
+        return bn_abs_add (left, right);
+    }
 }
 
 bn* bn_sub(bn const *left, bn const *right) {
@@ -179,6 +176,14 @@ bn* bn_div(bn const *left, bn const *right) {
 bn* bn_mod(bn const *left, bn const *right) {
 
 }
+
+void bn_print (bn* t) {
+    int i;
+    for (i = 0; i < t->bodysize; i++) {
+        printf("%d ", t->body[i]);
+    }
+}
+
 
 // Выдать представление BN в системе счисления radix в виде строки
 //Строку после использования потребуется удалить.

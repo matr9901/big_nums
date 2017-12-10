@@ -19,6 +19,8 @@ int bn_init_int(bn *t, int init_int);
 // Уничтожить BN (освободить память)
 int bn_delete(bn *t);
 
+void bn_print(bn *t);
+
 // Операции, аналогичные +=, -=, *=, /=, %=
 int bn_add_to(bn *t, bn const *right);
 int bn_sub_to(bn *t, bn const *right);
