@@ -228,7 +228,31 @@ bn* bn_sub(bn const *left, bn const *right) {
 }
 
 bn* bn_mul(bn const *left, bn const *right) {
-
+    bn *res = bn_new();
+    res->sign = left->sign * right->sign;
+    res->bodysize = left->bodysize + right->bodysize;
+    res->body = realloc(res->body, sizeof(int) * res->bodysize)
+    int i;
+    for (i = 0; i < left->bodysize; i++){
+        int v_ume = 0;
+        int j;
+        for (j = 0; j < right->bodysize || v_ume; j++){
+            res->body[i+j] += left->body[i] * right->body[j] + v_ume;
+            v_ume = res->body[i+j] / N;
+            res->body[i+j] -= v_ume * N;
+        }
+    }
+    int pos = left->bodysize + right->bodysize;
+    while (pos>0 && !res.body[pos])
+    pos--;
+    bn *res1 = bn_new();
+    res1->bodysize = pos + 1;
+    res1->sign = res->sign;
+    for (i = 0; i < res1->bodysize; i++){
+        res1->body[i] = res->body[i];
+    }
+    bn_delete(res);
+    return res1;
 }
 
 bn* bn_div(bn const *left, bn const *right) {
