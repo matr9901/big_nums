@@ -48,7 +48,23 @@ bn *bn_init(bn const *orig) { // Создать копию существующ�
 
 // Инициализировать значение BN десятичным представлением строки
 int bn_init_string(bn *t, const char *init_string) {
-    int sign_num = 0;
+    int sign_num;
+    if init_string[0] = '-'{
+        sign_num = 1;
+        t->sign = -1;
+    }
+    else if (init_string[0] < 58 && init_string[0] > 48){
+        sign_num = 0;
+        t->sign = 1;
+    }
+    else if (init_string[0] == '0' && strlen(init_string) == 1){
+        sign_num = 0;
+        t->sign = 0;
+    }
+    else{
+        printf("incorrect input");
+        return 1;
+    }
     int number_digits = strlen(init_string) - sign_num;
     t->bodysize = number_digits % 6 == 0 ? number_digits / 6 : number_digits / 6 + 1;
     t->body = realloc(t->body, sizeof(int) * t->bodysize);
@@ -62,7 +78,7 @@ int bn_init_string(bn *t, const char *init_string) {
 // Инициализировать значение BN представлением строки 
 // в системе счисления radix
 int bn_init_string_radix(bn *t, const char *init_string, int radix) {
-
+    
 }
 
 // Инициализировать значение BN заданным целым числом
