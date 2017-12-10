@@ -141,7 +141,8 @@ int bn_delete(bn *t) {
 
 // Операции, аналогичные +=, -=, *=, /=, %=
 int bn_add_to(bn *t, bn const *right) {
-    
+    t = bn_add(t, right);
+    return 0;
 }
 
 int bn_sub_to(bn *t, bn const *right) {
@@ -149,7 +150,8 @@ int bn_sub_to(bn *t, bn const *right) {
 }
 
 int bn_mul_to(bn *t, bn const *right) {
-
+    t = bn_mul(t, right);
+    return 0;
 }
 
 int bn_div_to(bn *t, bn const *right) {
@@ -258,7 +260,43 @@ bn* bn_mul(bn const *left, bn const *right) {
 }
 
 bn* bn_div(bn const *left, bn const *right) {
+    bn *res = bn_new();
+    res->sign = left->sign * right->sign;
+    res->bodysize = left->bodysize;
+    res->body = realloc(res->body, sizeof(int) * res->bodysize);
+    bn *curValue = bn_new();
+    curValue->sign = left->sign;
+    curValue->bodysize = left->bodysize;
+    curValue->body = realloc(curValue->body, sizeof(int) * res->bodysize);
+    int i;
+    for (int i = left->bodysize; i>=0; i--){
+        bn_mul_to(curValue, bn_init_int(N));
+        curValue->body[0] = left->body[i];
+        int x = 0;
+        int l = 0;
+        int r = N;
+        while (l <= r) {
+            int m = (l + r) >> l;
+            bn *cur = bn_new();
+            cur->sign = left->sign;
+            cur->bodysize = m * right->bodysize;
+            cur->body = realloc(cur->body, sizeof(int) * cur->bodysize);
+            if (bn_cmp(cur, curValue) <= 0){
+                x = m;
+                l = m+1;
+            }
+            else {r = m - 1;}
+        }
+        res->body[i] = x;
+        curValue = bn_init(bn_sub(curValue, bn_mul(right, bn_init_int(x))));
 
+    }
+    int pos = left->bodysize;
+    while (pos>=0 && !res->body[pos])
+    pos--;
+    res->bodysize = pos+1;
+ 
+  return res;
 }
 
 bn* bn_mod(bn const *left, bn const *right) {
