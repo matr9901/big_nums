@@ -141,9 +141,11 @@ bn* bn_add(bn const *left, bn const *right) {
             r = 0;
         }
     }
+
     if (res->body[res->bodysize]) {
         res->bodysize++;
     }
+    
     return res;
 }
 
@@ -166,7 +168,7 @@ bn* bn_mod(bn const *left, bn const *right) {
 // Выдать представление BN в системе счисления radix в виде строки
 //Строку после использования потребуется удалить.
 const char *bn_to_string(bn const *t, int radix) {
-    
+
 }
 
 // Если левое меньше, вернуть <0; если равны, вернуть 0; иначе >0
