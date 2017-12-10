@@ -1,6 +1,6 @@
 #include <math.h>
 #include <stdlib.h>
-#include <math.h>
+#include <string.h>
 
 #define max(x, y) (((x) < (y)) ? (x) : (y))
 #define N 1000000
@@ -122,7 +122,7 @@ int bn_pow_to(bn *t, int degree) {
     for (i = 0; i < degree - 1; i++) {
         bn_mul_to(t, nbn);
     }
-    bn_delete(nbn);s
+    bn_delete(nbn);
 }
 
 // Извлечь корень степени reciprocal из BN (бонусная функция)
@@ -156,7 +156,26 @@ bn* bn_add(bn const *left, bn const *right) {
     return res;
 }
 
-bn* bn_sub(bn const *left, bn const *right) {
+// вычитание по модулю, left>right
+bn* bn_abs_sub(bn const *left, bn const *right) {
+    bn* res = bn_new();
+    int i = 0;
+    res->bodysize = max (left->bodysize, right->bodysize);
+    res->body = realloc(res->body, sizeof(int) * (res->bodysize));
+
+    for (i; i<left->bodysize; i++){
+        res->body[i] = left->body[i] - right->body[i];
+        if (res->body[i] <0){
+            res->body[i+1] --;
+            res->body = res->body + N;
+        }
+    }
+    int a = res->bodysize - 1;
+    while (res->body[a] == 0 && a != 0){
+        free(res->body[a]);
+        res->bodysize -= 1;
+    }
+    return res;
 
 }
 
