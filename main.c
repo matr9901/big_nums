@@ -10,6 +10,8 @@ int main() {
 	
 	bn* sum = bn_add (big_number, big_number2);
 
+
+	bn_print(sum);
 	bn_delete(sum);
 	bn_delete(big_number);
 	bn_delete(big_number2);

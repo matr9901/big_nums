@@ -1,9 +1,10 @@
 #include <math.h>
 #include <stdlib.h>
 #include <string.h>
+#include <stdio.h>
 
 #define max(x, y) (((x) < (y)) ? (x) : (y))
-#define N 1000000
+#define N 10000
 
 struct bn_s {
     int *body;
@@ -16,7 +17,7 @@ typedef struct bn_s bn;
 
 
 //Длинное число представляет из себя массив из шестизначных чисел
-//То есть максимум каждой "цифры" 999999.
+//То есть максимум каждой "цифры" 9999.
 
 bn *bn_new() { // Создать новое BN
     bn* r = malloc(sizeof (bn));
@@ -48,13 +49,29 @@ bn *bn_init(bn const *orig) { // Создать копию существующ�
 
 // Инициализировать значение BN десятичным представлением строки
 int bn_init_string(bn *t, const char *init_string) {
-    int sign_num = 0;
+    int sign_num;
+    if (init_string[0] == '-') {
+        sign_num = 1;
+        t->sign = 1;
+    }
+    else if (init_string[0] < 58 && init_string[0] > 48) {
+        sign_num = 0;
+        t->sign = 0;
+    }
+    else if (init_string[0] == '0' && strlen(init_string) == 1) {
+        sign_num = 0;
+        t->sign = 0;
+    } else{
+        printf("incorrect input");
+        return 1;
+    }
+
     int number_digits = strlen(init_string) - sign_num;
     t->bodysize = number_digits % 6 == 0 ? number_digits / 6 : number_digits / 6 + 1;
     t->body = realloc(t->body, sizeof(int) * t->bodysize);
     int i;
-    for (i = strlen(init_string) - 1; i >= sign_num; i--){
-        t->body[(strlen(init_string) - i - 1)/6] += s[i] * pow(10, (strlen(init_string) - i - 1) % 6);
+    for (i = strlen(init_string) - 1; i >= sign_num; i--) {
+        t->body[(strlen(init_string) - i - 1)/6] += (init_string[i] - '0') * pow(10, (strlen(init_string) - i - 1) % 6);
     }
     return 0;
 }
@@ -62,7 +79,35 @@ int bn_init_string(bn *t, const char *init_string) {
 // Инициализировать значение BN представлением строки 
 // в системе счисления radix
 int bn_init_string_radix(bn *t, const char *init_string, int radix) {
+    int sign_num;
+    if (init_string[0] == '-') {
+        sign_num = 1;
+        t->sign = 1;
+    }
+    else if ((init_string[0] < 58) && (init_string[0] > 48)) {
+        sign_num = 0;
+        t->sign = 0;
+    }
+    else if ((init_string[0] == '0') && (strlen(init_string) == 1)) {
+        sign_num = 0;
+        t->sign = 0;
+    } else {
+        printf("incorrect input");
+        return 1;
+    }
 
+    int number_digits = strlen(init_string) - sign_num;
+    t->bodysize = number_digits % 6 == 0 ? number_digits / 6 : number_digits / 6 + 1;
+    t->body = realloc(t->body, sizeof(int) * t->bodysize);
+    int i;
+    for (i = strlen(init_string) - 1; i >= sign_num; i--) {
+        if (init_string[i] < 58 && init_string[i] > 48) {
+            t->body[(strlen(init_string) - i - 1)/6] += (init_string[i]  - '0')* pow(radix, (strlen(init_string) - i - 1) % 6);
+        } else if (init_string[i] < 'Z' && init_string[i] > 'A'){
+            t->body[(strlen(init_string) - i - 1)/6] += (init_string[i] - 'A' + 10) * pow(radix, (strlen(init_string) - i - 1) % 6);
+        }
+    }
+    return 0;
 }
 
 // Инициализировать значение BN заданным целым числом
@@ -130,18 +175,16 @@ int bn_root_to(bn *t, int reciprocal) {
     
 }
 
-// Аналоги операций x = l+r (l-r, l*r, l/r, l%r)
-bn* bn_add(bn const *left, bn const *right) {
-
+bn* bn_abs_add(bn const *left, bn const *right) {
     bn* res = bn_new();
     
     res->sign = 0;
     res->bodysize = max (left->bodysize, right->bodysize);
     
-    res->body = realloc(res->body, sizeof(int) * (res->bodysize + 1));
+    res->body = realloc(res->body, sizeof(int) * (res->bodysize));
     int i;
     int r = 0;
-    for (i = 0; i < res->bodysize | r; i++) {
+    for (i = 0; i < res->bodysize; i++) {
         res->body[i] = left->body[i] + right->body[i] + r;
         if (res->body[i] >= N) {
             res->body[i] -= N;
@@ -150,10 +193,15 @@ bn* bn_add(bn const *left, bn const *right) {
             r = 0;
         }
     }
-    if (res->body[res->bodysize]) {
-        res->bodysize++;
-    }
+
     return res;
+}
+
+// Аналоги операций x = l+r (l-r, l*r, l/r, l%r)
+bn* bn_add(bn const *left, bn const *right) {
+    if ((left->sign == 0) && (right->sign == 0)) {
+        return bn_abs_add (left, right);
+    }
 }
 
 // вычитание по модулю, left>right
@@ -163,24 +211,50 @@ bn* bn_abs_sub(bn const *left, bn const *right) {
     res->bodysize = max (left->bodysize, right->bodysize);
     res->body = realloc(res->body, sizeof(int) * (res->bodysize));
 
-    for (i; i<left->bodysize; i++){
+    for (i; i<left->bodysize; i++) {
         res->body[i] = left->body[i] - right->body[i];
-        if (res->body[i] <0){
-            res->body[i+1] --;
+        if (res->body[i] <0) {
+            res->body[i+1]--;
             res->body = res->body + N;
         }
     }
     int a = res->bodysize - 1;
-    while (res->body[a] == 0 && a != 0){
-        free(res->body[a]);
-        res->bodysize -= 1;
+    while ((res->body[a] == 0) && (a != 0)) {
+        res->bodysize--;
     }
     return res;
+}
+
+bn* bn_sub(bn const *left, bn const *right) {
 
 }
 
 bn* bn_mul(bn const *left, bn const *right) {
-
+    bn *res = bn_new();
+    res->sign = left->sign * right->sign;
+    res->bodysize = left->bodysize + right->bodysize;
+    res->body = realloc(res->body, sizeof(int) * res->bodysize)
+    int i;
+    for (i = 0; i < left->bodysize; i++){
+        int v_ume = 0;
+        int j;
+        for (j = 0; j < right->bodysize || v_ume; j++){
+            res->body[i+j] += left->body[i] * right->body[j] + v_ume;
+            v_ume = res->body[i+j] / N;
+            res->body[i+j] -= v_ume * N;
+        }
+    }
+    int pos = left->bodysize + right->bodysize;
+    while (pos>0 && !res.body[pos])
+    pos--;
+    bn *res1 = bn_new();
+    res1->bodysize = pos + 1;
+    res1->sign = res->sign;
+    for (i = 0; i < res1->bodysize; i++){
+        res1->body[i] = res->body[i];
+    }
+    bn_delete(res);
+    return res1;
 }
 
 bn* bn_div(bn const *left, bn const *right) {
@@ -190,6 +264,14 @@ bn* bn_div(bn const *left, bn const *right) {
 bn* bn_mod(bn const *left, bn const *right) {
 
 }
+
+void bn_print (bn* t) {
+    int i;
+    for (i = 0; i < t->bodysize; i++) {
+        printf("%d ", t->body[i]);
+    }
+}
+
 
 // Выдать представление BN в системе счисления radix в виде строки
 //Строку после использования потребуется удалить.
