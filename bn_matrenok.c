@@ -54,7 +54,7 @@ int bn_init_string(bn *t, const char *init_string) {
         sign_num = 1;
         t->sign = 1;
     }
-    else if (init_string[0] < 58 && init_string[0] > 48) {
+    else if ((init_string[0] < 58 && init_string[0] > 48) || (init_string[0] < 'Z' && init_string[0] > 'A'))) {
         sign_num = 0;
         t->sign = 0;
     }
@@ -67,11 +67,11 @@ int bn_init_string(bn *t, const char *init_string) {
     }
 
     int number_digits = strlen(init_string) - sign_num;
-    t->bodysize = number_digits % 6 == 0 ? number_digits / 6 : number_digits / 6 + 1;
+    t->bodysize = number_digits % N == 0 ? number_digits / N : number_digits / N + 1;
     t->body = realloc(t->body, sizeof(int) * t->bodysize);
     int i;
     for (i = strlen(init_string) - 1; i >= sign_num; i--) {
-        t->body[(strlen(init_string) - i - 1)/6] += (init_string[i] - '0') * pow(10, (strlen(init_string) - i - 1) % 6);
+        t->body[(strlen(init_string) - i - 1)/N] += (init_string[i] - '0') * pow(10, (strlen(init_string) - i - 1) % N);
     }
     return 0;
 }
@@ -84,7 +84,7 @@ int bn_init_string_radix(bn *t, const char *init_string, int radix) {
         sign_num = 1;
         t->sign = 1;
     }
-    else if ((init_string[0] < 58) && (init_string[0] > 48)) {
+    else if ((init_string[0] < 58) && (init_string[0] > 48) || (init_string[0] < 'Z' && init_string[0] > 'A'))) {
         sign_num = 0;
         t->sign = 0;
     }
@@ -97,14 +97,14 @@ int bn_init_string_radix(bn *t, const char *init_string, int radix) {
     }
 
     int number_digits = strlen(init_string) - sign_num;
-    t->bodysize = number_digits % 6 == 0 ? number_digits / 6 : number_digits / 6 + 1;
+    t->bodysize = number_digits % N == 0 ? number_digits / N : number_digits / N + 1;
     t->body = realloc(t->body, sizeof(int) * t->bodysize);
     int i;
     for (i = strlen(init_string) - 1; i >= sign_num; i--) {
         if (init_string[i] < 58 && init_string[i] > 48) {
-            t->body[(strlen(init_string) - i - 1)/6] += (init_string[i]  - '0')* pow(radix, (strlen(init_string) - i - 1) % 6);
+            t->body[(strlen(init_string) - i - 1)/N] += (init_string[i]  - '0')* pow(radix, (strlen(init_string) - i - 1) % N);
         } else if (init_string[i] < 'Z' && init_string[i] > 'A'){
-            t->body[(strlen(init_string) - i - 1)/6] += (init_string[i] - 'A' + 10) * pow(radix, (strlen(init_string) - i - 1) % 6);
+            t->body[(strlen(init_string) - i - 1)/N] += (init_string[i] - 'A' + 10) * pow(radix, (strlen(init_string) - i - 1) % N);
         }
     }
     return 0;
@@ -155,7 +155,8 @@ int bn_mul_to(bn *t, bn const *right) {
 }
 
 int bn_div_to(bn *t, bn const *right) {
-
+    t = bn_div(t, right);
+    return 0;
 }
 
 int bn_mod_to(bn *t, bn const *right) {
