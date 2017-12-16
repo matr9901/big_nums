@@ -54,7 +54,7 @@ int bn_init_string(bn *t, const char *init_string) {
         sign_num = 1;
         t->sign = 1;
     }
-    else if (init_string[0] < 58 && init_string[0] > 48) {
+    else if ((init_string[0] < 58 && init_string[0] > 48) || (init_string[0] < 'Z' && init_string[0] > 'A'))) {
         sign_num = 0;
         t->sign = 0;
     }
@@ -67,11 +67,11 @@ int bn_init_string(bn *t, const char *init_string) {
     }
 
     int number_digits = strlen(init_string) - sign_num;
-    t->bodysize = number_digits % 6 == 0 ? number_digits / 6 : number_digits / 6 + 1;
+    t->bodysize = number_digits % N == 0 ? number_digits / N : number_digits / N + 1;
     t->body = realloc(t->body, sizeof(int) * t->bodysize);
     int i;
     for (i = strlen(init_string) - 1; i >= sign_num; i--) {
-        t->body[(strlen(init_string) - i - 1)/6] += (init_string[i] - '0') * pow(10, (strlen(init_string) - i - 1) % 6);
+        t->body[(strlen(init_string) - i - 1)/N] += (init_string[i] - '0') * pow(10, (strlen(init_string) - i - 1) % N);
     }
     return 0;
 }
@@ -84,7 +84,7 @@ int bn_init_string_radix(bn *t, const char *init_string, int radix) {
         sign_num = 1;
         t->sign = 1;
     }
-    else if ((init_string[0] < 58) && (init_string[0] > 48)) {
+    else if ((init_string[0] < 58) && (init_string[0] > 48) || (init_string[0] < 'Z' && init_string[0] > 'A'))) {
         sign_num = 0;
         t->sign = 0;
     }
@@ -97,14 +97,14 @@ int bn_init_string_radix(bn *t, const char *init_string, int radix) {
     }
 
     int number_digits = strlen(init_string) - sign_num;
-    t->bodysize = number_digits % 6 == 0 ? number_digits / 6 : number_digits / 6 + 1;
+    t->bodysize = number_digits % N == 0 ? number_digits / N : number_digits / N + 1;
     t->body = realloc(t->body, sizeof(int) * t->bodysize);
     int i;
     for (i = strlen(init_string) - 1; i >= sign_num; i--) {
         if (init_string[i] < 58 && init_string[i] > 48) {
-            t->body[(strlen(init_string) - i - 1)/6] += (init_string[i]  - '0')* pow(radix, (strlen(init_string) - i - 1) % 6);
+            t->body[(strlen(init_string) - i - 1)/N] += (init_string[i]  - '0')* pow(radix, (strlen(init_string) - i - 1) % N);
         } else if (init_string[i] < 'Z' && init_string[i] > 'A'){
-            t->body[(strlen(init_string) - i - 1)/6] += (init_string[i] - 'A' + 10) * pow(radix, (strlen(init_string) - i - 1) % 6);
+            t->body[(strlen(init_string) - i - 1)/N] += (init_string[i] - 'A' + 10) * pow(radix, (strlen(init_string) - i - 1) % N);
         }
     }
     return 0;
@@ -141,7 +141,8 @@ int bn_delete(bn *t) {
 
 // Операции, аналогичные +=, -=, *=, /=, %=
 int bn_add_to(bn *t, bn const *right) {
-    
+    t = bn_add(t, right);
+    return 0;
 }
 
 int bn_sub_to(bn *t, bn const *right) {
@@ -149,11 +150,13 @@ int bn_sub_to(bn *t, bn const *right) {
 }
 
 int bn_mul_to(bn *t, bn const *right) {
-
+    t = bn_mul(t, right);
+    return 0;
 }
 
 int bn_div_to(bn *t, bn const *right) {
-
+    t = bn_div(t, right);
+    return 0;
 }
 
 int bn_mod_to(bn *t, bn const *right) {
@@ -353,7 +356,43 @@ bn* bn_mul(bn const *left, bn const *right) {
 }
 
 bn* bn_div(bn const *left, bn const *right) {
+    bn *res = bn_new();
+    res->sign = left->sign * right->sign;
+    res->bodysize = left->bodysize;
+    res->body = realloc(res->body, sizeof(int) * res->bodysize);
+    bn *curValue = bn_new();
+    curValue->sign = left->sign;
+    curValue->bodysize = left->bodysize;
+    curValue->body = realloc(curValue->body, sizeof(int) * res->bodysize);
+    int i;
+    for (int i = left->bodysize; i>=0; i--){
+        bn_mul_to(curValue, bn_init_int(N));
+        curValue->body[0] = left->body[i];
+        int x = 0;
+        int l = 0;
+        int r = N;
+        while (l <= r) {
+            int m = (l + r) >> l;
+            bn *cur = bn_new();
+            cur->sign = left->sign;
+            cur->bodysize = m * right->bodysize;
+            cur->body = realloc(cur->body, sizeof(int) * cur->bodysize);
+            if (bn_cmp(cur, curValue) <= 0){
+                x = m;
+                l = m+1;
+            }
+            else {r = m - 1;}
+        }
+        res->body[i] = x;
+        curValue = bn_init(bn_sub(curValue, bn_mul(right, bn_init_int(x))));
 
+    }
+    int pos = left->bodysize;
+    while (pos>=0 && !res->body[pos])
+    pos--;
+    res->bodysize = pos+1;
+ 
+  return res;
 }
 
 bn* bn_mod(bn const *left, bn const *right) {
