@@ -196,12 +196,66 @@ bn* bn_abs_add(bn const *left, bn const *right) {
 
     return res;
 }
+bn* bn_one_min_add(bn const *left, bn const *right);
+
+bn* bn_two_min_add(bn const *left, bn const *right);
 
 // Аналоги операций x = l+r (l-r, l*r, l/r, l%r)
 bn* bn_add(bn const *left, bn const *right) {
     if ((left->sign == 0) && (right->sign == 0)) {
         return bn_abs_add (left, right);
     }
+    else if ((left->sign == 1) && (right->sign == 0)){
+        return bn_one_min_add(left, right);
+    }
+    else if ((left->sign == 0) && right->sign ==1){
+        return bn_one_min_add(right, left);
+    }
+    else{
+        return bn_two_min_add(left, right);
+    }
+}
+
+bn* bn_abs_sub(bn const *left, bn const *right);
+
+bn* bn_cmp(bn const *left, bn const *right);
+
+//сложение когда l<0 r>0
+bn* bn_one_min_add(bn const *left, bn const *right) {
+    bn* left1 = bn_init(left);
+    //left1=left;
+    //left1->sign = 0;
+    //left1->bodysize = left->bodysize;
+    //left1->body = realloc(left1->body, sizeof(int) * (left1->bodysize));
+    left1->sign = 0;
+    bn *res = bn_new();
+    if (bn_cmp(left1, right) >= 0) {
+        res = bn_init(bn_abs_sub(left1, right)); // TODO if I write 'return (bn_sub(left1,right))' will left1 be free?
+        res->sign = 1;
+    }
+    else{
+        res = bn_init(bn_abs_sub(right, left1));
+    }
+    free(left1);
+    return (res);
+}
+
+bn* bn_two_min_add(bn const *left, bn const *right) {
+    bn* left1 = bn_init(left);
+    bn* right1 = bn_init(right);
+    left1->sign = 0;
+    right1->sign = 0;
+    bn *res = bn_new();
+    if (bn_cmp(left1, right1) >= 0) {
+        res = bn_init(bn_abs_sub(left1, right1)); // TODO if I write 'return (bn_sub(left1,right))' will left1 be free?
+    }
+    else{
+        res = bn_init(bn_abs_sub(right1, left1));
+    }
+    free(left1);
+    free(right1);
+    res->sign = 1;
+    return (res);
 }
 
 // вычитание по модулю, left>right
@@ -226,14 +280,55 @@ bn* bn_abs_sub(bn const *left, bn const *right) {
 }
 
 bn* bn_sub(bn const *left, bn const *right) {
-
+    if ((left->sign == 0) && (right->sign == 0)){
+        if (bn_cmp(left,right) >= 0){
+            return bn_abs_sub(left, right);
+        }
+        else{
+            bn *res = bn_new();
+            res = bn_abs_sub(left,right);
+            res->sign = 1;
+        }
+    }
+    else if (((left->sign == 1) && (right->sign == 0)) || ((left->sign == 0) && (right->sign == 1))) {
+        bn *left1 = bn_init(left);
+        bn *right1 = bn_init(right);
+        right1->sign = 0;
+        left1->sign = 0;
+        bn *res = bn_new();
+        res = bn_add(left1,right1);
+        res->sign = 1;
+        free (right1);
+        free (left1);
+        return res;
+    }
+    else if ((left->sign == 1) && (right->sign == 1)){
+        bn *left1 = bn_init(left);
+        bn *right1 = bn_init(right);
+        right1->sign = 0;
+        left1->sign = 0;
+        bn *res = bn_new();
+        if (bn_cmp(left,right) >= 0){
+            res = bn_abs_sub(left1, right1);
+            res->sign = 1;
+            free(left1);
+            free(right1);
+            return res;
+        }
+        else {
+            res = bn_abs_sub(right1, left1);
+            free(left1);
+            free(right1);
+            return res;
+        }
+    }
 }
 
 bn* bn_mul(bn const *left, bn const *right) {
     bn *res = bn_new();
     res->sign = left->sign * right->sign;
     res->bodysize = left->bodysize + right->bodysize;
-    res->body = realloc(res->body, sizeof(int) * res->bodysize)
+    res->body = realloc(res->body, sizeof(int) * res->bodysize);
     int i;
     for (i = 0; i < left->bodysize; i++){
         int v_ume = 0;
@@ -245,7 +340,7 @@ bn* bn_mul(bn const *left, bn const *right) {
         }
     }
     int pos = left->bodysize + right->bodysize;
-    while (pos>0 && !res.body[pos])
+    while (pos>0 && !res->body[pos])
     pos--;
     bn *res1 = bn_new();
     res1->bodysize = pos + 1;
@@ -296,7 +391,7 @@ int bn_cmp(bn const *left, bn const *right) {
         }
         else{
             int i = left->bodysize - 1;
-            for (i; i == -1; i--){  // TODO: fix i-- 'unreachable code'
+            for (i; i == -1; i--){
                 if (left->body[i]>right->body[i]){
                     return 1;
                 }
